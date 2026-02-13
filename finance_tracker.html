@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker - Danuka Lakshan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Icons (Feather Icons replacement for Lucide in Vanilla) -->
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // Indigo-600
+                        secondary: '#10B981', // Emerald-500
+                        danger: '#EF4444', // Red-500
+                        dark: '#0F172A',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        neon: ['Orbitron', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Neon Glow Effect */
+        .neon-box {
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .neon-box:hover {
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.8);
+        }
+
+        .neon-text {
+            color: #fff;
+            text-shadow:
+                0 0 7px #fff,
+                0 0 10px #fff,
+                0 0 21px #fff,
+                0 0 42px #0fa,
+                0 0 82px #0fa,
+                0 0 92px #0fa,
+                0 0 102px #0fa,
+                0 0 151px #0fa;
+            animation: flicker 2s infinite alternate;
+        }
+
+        @keyframes flicker {
+
+            0%,
+            19%,
+            21%,
+            23%,
+            25%,
+            54%,
+            56%,
+            100% {
+                text-shadow:
+                    0 0 4px #fff,
+                    0 0 11px #fff,
+                    0 0 19px #fff,
+                    0 0 40px #0fa,
+                    0 0 80px #0fa,
+                    0 0 90px #0fa,
+                    0 0 100px #0fa,
+                    0 0 150px #0fa;
+            }
+
+            20%,
+            24%,
+            55% {
+                text-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
+
+    <div class="flex-grow max-w-7xl mx-auto w-full p-6 md:p-12">
+        <!-- Header -->
+        <header class="mb-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+                    <i data-feather="layout" class="text-indigo-600 w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Finance Dashboard</h1>
+                    <p class="text-gray-500 font-medium">Manage your income & expenses</p>
+                </div>
+            </div>
+
+            <button onclick="downloadReport()"
+                class="flex items-center gap-2 bg-white text-gray-700 px-5 py-2.5 rounded-xl border border-gray-200 font-semibold shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95">
+                <i data-feather="download" class="w-5 h-5"></i>
+                <span class="hidden sm:inline">Export Report (CSV)</span>
+            </button>
+        </header>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Income Card -->
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-transform border border-gray-100 flex items-center justify-between group">
+                <div>
+                    <p class="text-emerald-600 text-xs font-bold uppercase tracking-wider mb-1">Total Income</p>
+                    <p class="text-2xl font-bold text-gray-900" id="total_income">LKR 0.00</p>
+                </div>
+                <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                    <i data-feather="trending-up" class="w-6 h-6"></i>
+                </div>
+            </div>
+            <!-- Expense Card -->
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-transform border border-gray-100 flex items-center justify-between group">
+                <div>
+                    <p class="text-rose-600 text-xs font-bold uppercase tracking-wider mb-1">Total Expenses</p>
+                    <p class="text-2xl font-bold text-gray-900" id="total_expense">LKR 0.00</p>
+                </div>
+                <div class="p-3 bg-rose-50 rounded-xl text-rose-600">
+                    <i data-feather="trending-down" class="w-6 h-6"></i>
+                </div>
+            </div>
+            <!-- Balance Card -->
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-transform border border-gray-100 flex items-center justify-between relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">Net Balance</p>
+                    <p class="text-2xl font-bold text-gray-900" id="net_balance">LKR 0.00</p>
+                </div>
+                <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600 relative z-10">
+                    <i data-feather="credit-card" class="w-6 h-6"></i>
+                </div>
+                <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500" id="balance_indicator"></div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+
+            <!-- Left Column: Form & Chart -->
+            <div class="xl:col-span-1 space-y-8">
+
+                <!-- Add Transaction Form -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 neon-box">
+                    <h2 class="text-xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+                        <i data-feather="plus-circle" class="w-5 h-5"></i> Add New Entry
+                    </h2>
+
+                    <form id="transactionForm" onsubmit="addTransaction(event)">
+                        <!-- Type Selection -->
+                        <div class="flex gap-4 mb-6">
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="type" value="income" class="hidden peer"
+                                    onchange="updateTypeStyles()">
+                                <div id="btn-income"
+                                    class="text-center py-3 rounded-xl border-2 border-transparent bg-gray-50 text-gray-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 peer-checked:border-emerald-500 font-medium transition-all flex items-center justify-center gap-2">
+                                    <i data-feather="arrow-up-circle" class="w-4 h-4"></i> Income
+                                </div>
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="type" value="expense" checked class="hidden peer"
+                                    onchange="updateTypeStyles()">
+                                <div id="btn-expense"
+                                    class="text-center py-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-medium transition-all flex items-center justify-center gap-2">
+                                    <i data-feather="arrow-down-circle" class="w-4 h-4"></i> Expense
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Inputs -->
+                        <div class="space-y-4">
+                            <input type="text" id="descInput" placeholder="Description (e.g., Salary, Food)" required
+                                class="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none">
+                            <input type="number" id="amountInput" placeholder="Amount (LKR)" required step="0.01"
+                                min="0"
+                                class="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none">
+                        </div>
+
+                        <button type="submit"
+                            class="mt-6 w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-md shadow-indigo-200">
+                            Add Transaction
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Chart Section -->
+                <div
+                    class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 text-center h-[350px] flex flex-col justify-center">
+                    <h3 class="text-lg font-bold text-gray-700 mb-6">Financial Overview</h3>
+
+                    <div class="relative w-48 h-48 mx-auto rounded-full shadow-inner flex items-center justify-center"
+                        id="pieChart">
+                        <div
+                            class="absolute inset-4 bg-white rounded-full flex flex-col items-center justify-center shadow-lg z-10">
+                            <span class="text-gray-400 text-xs font-bold uppercase tracking-widest">Total</span>
+                            <span class="text-gray-900 text-lg font-bold" id="chartTotal">LKR 0</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center gap-6 mt-6">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                            <span class="text-xs text-gray-600 font-medium" id="incomeLegend">Income 0%</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                            <span class="text-xs text-gray-600 font-medium" id="expenseLegend">Expense 0%</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: List -->
+            <div class="xl:col-span-2">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 h-full">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">Recent Activity</h2>
+                        <span class="text-sm bg-gray-100 text-gray-600 py-1 px-3 rounded-full font-medium"
+                            id="entryCount">0 entries</span>
+                    </div>
+
+                    <div id="transactionList" class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                        <!-- Transactions will be injected here -->
+                        <div
+                            class="text-center py-12 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                            <p class="text-lg font-medium">No transactions yet</p>
+                            <p class="text-sm">Add your first income or expense!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-8 text-center bg-gray-900 border-t border-gray-800">
+        <div class="inline-block px-8 py-3">
+            <p class="text-sm font-medium text-gray-400 flex items-center justify-center gap-3">
+                <span class="uppercase tracking-widest text-xs">Designed & Developed by</span>
+                <span class="font-neon text-xl text-white neon-text tracking-widest">DANUKA LAKSHAN</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // --- State ---
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+            render();
+            updateTypeStyles();
+        });
+
+        // --- Functions ---
+
+        function addTransaction(e) {
+            e.preventDefault();
+            const desc = document.getElementById('descInput').value;
+            const amount = parseFloat(document.getElementById('amountInput').value);
+            const type = document.querySelector('input[name="type"]:checked').value;
+
+            if (!desc || isNaN(amount) || amount <= 0) return;
+
+            const newTransaction = {
+                id: Date.now(),
+                description: desc,
+                amount: amount,
+                type: type,
+                date: new Date().toISOString()
+            };
+
+            transactions = [newTransaction, ...transactions];
+            saveAndRender();
+
+            // Reset Form
+            document.getElementById('transactionForm').reset();
+            // Reset radio style to default
+            document.querySelector('input[name="type"][value="expense"]').checked = true;
+            updateTypeStyles();
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Are you sure you want to delete this entry?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                saveAndRender();
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            render();
+        }
+
+        function render() {
+            // Calculate Totals
+            let income = 0;
+            let expense = 0;
+            transactions.forEach(t => {
+                if (t.type === 'income') income += t.amount;
+                else expense += t.amount;
+            });
+            const balance = income - expense;
+
+            // Update Cards
+            document.getElementById('total_income').innerText = `LKR ${income.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+            document.getElementById('total_expense').innerText = `LKR ${expense.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+            const balEl = document.getElementById('net_balance');
+            balEl.innerText = `LKR ${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+            balEl.className = `text-2xl font-bold ${balance >= 0 ? 'text-indigo-600' : 'text-rose-600'}`;
+
+            document.getElementById('balance_indicator').className = `absolute top-0 left-0 w-1 h-full ${balance >= 0 ? 'bg-indigo-500' : 'bg-rose-500'}`;
+            document.getElementById('entryCount').innerText = `${transactions.length} entries`;
+
+            // Update List
+            const listEl = document.getElementById('transactionList');
+            if (transactions.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                        <p class="text-lg font-medium">No transactions yet</p>
+                        <p class="text-sm">Add your first income or expense!</p>
+                    </div>`;
+            } else {
+                listEl.innerHTML = transactions.map(t => {
+                    const isIncome = t.type === 'income';
+                    return `
+                    <div class="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl hover:bg-white hover:shadow-md border border-transparent hover:border-gray-100 transition-all group">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-full ${isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
+                                <i data-feather="${isIncome ? 'arrow-up' : 'arrow-down'}" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">${t.description}</p>
+                                <p class="text-xs text-gray-500">${new Date(t.date).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold ${isIncome ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${isIncome ? '+' : '-'} ${t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </span>
+                            <button onclick="deleteTransaction(${t.id})" class="text-gray-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-colors">
+                                <i data-feather="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                feather.replace(); // Re-init icons for new elements
+            }
+
+            // Update Chart
+            updateChart(income, expense);
+        }
+
+        function updateChart(income, expense) {
+            const total = income + expense;
+            const chartTotalEl = document.getElementById('chartTotal');
+            const chartEl = document.getElementById('pieChart');
+
+            if (total === 0) {
+                chartEl.style.background = '#f3f4f6'; // Gray
+                chartTotalEl.innerText = "LKR 0";
+                document.getElementById('incomeLegend').innerText = "Income 0%";
+                document.getElementById('expenseLegend').innerText = "Expense 0%";
+                return;
+            }
+
+            const incomePct = (income / total) * 100;
+            const expensePct = (expense / total) * 100;
+
+            chartEl.style.background = `conic-gradient(#10B981 0% ${incomePct}%, #F43F5E ${incomePct}% 100%)`;
+            chartTotalEl.innerText = `LKR ${total.toLocaleString(undefined, { compactDisplay: 'short', maximumFractionDigits: 1 })}`;
+
+            document.getElementById('incomeLegend').innerText = `Income ${incomePct.toFixed(1)}%`;
+            document.getElementById('expenseLegend').innerText = `Expense ${expensePct.toFixed(1)}%`;
+        }
+
+        // --- UI Utils ---
+        function updateTypeStyles() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const btnIncome = document.getElementById('btn-income');
+            const btnExpense = document.getElementById('btn-expense');
+
+            // Reset styles
+            const baseClass = "text-center py-3 rounded-xl border-2 border-transparent bg-gray-50 text-gray-500 font-medium transition-all flex items-center justify-center gap-2";
+            btnIncome.className = baseClass;
+            btnExpense.className = baseClass;
+
+            // Apply Active styles
+            if (type === 'income') {
+                btnIncome.className = "text-center py-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-medium transition-all flex items-center justify-center gap-2 shadow-sm";
+            } else {
+                btnExpense.className = "text-center py-3 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 font-medium transition-all flex items-center justify-center gap-2 shadow-sm";
+            }
+        }
+
+        function downloadReport() {
+            if (transactions.length === 0) {
+                alert("No transactions to export!");
+                return;
+            }
+            const headers = "Date,Description,Type,Amount\n";
+            const csv = transactions.map(t =>
+                `${new Date(t.date).toISOString().split('T')[0]},"${t.description}",${t.type},${t.amount}`
+            ).join("\n");
+
+            const blob = new Blob([headers + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `financial_report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+
+</html>
